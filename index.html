@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgroSmart - Smart Irrigation System</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/date-fns@2.29.3/index.min.js"></script>
+</head>
+<body>
+    <!-- Top Layout -->
+    <header class="top-header">
+        <div class="device-status">
+            <div class="status-indicator" id="deviceStatus">
+                <i class="fas fa-microchip"></i>
+                <span id="statusText" data-en="ESP32: Active" data-hi="ESP32: सक्रिय" data-ne="ESP32: सक्रिय">ESP32: Active</span>
+                <div class="status-light active" id="statusLight"></div>
+            </div>
+        </div>
+        
+        <div class="language-selector">
+            <select id="languageSelect">
+                <option value="en">English</option>
+                <option value="hi">हिंदी</option>
+                <option value="ne">नेपाली</option>
+            </select>
+        </div>
+    </header>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <i class="fas fa-seedling"></i>
+            <span data-en="AgroSmart" data-hi="एग्रोस्मार्ट" data-ne="एग्रोस्मार्ट">AgroSmart</span>
+        </div>
+        <div class="nav-tabs">
+            <button class="nav-tab active" data-tab="home">
+                <i class="fas fa-home"></i>
+                <span data-en="Home" data-hi="होम" data-ne="गृह">Home</span>
+            </button>
+            <button class="nav-tab" data-tab="advisory">
+                <i class="fas fa-brain"></i>
+                <span data-en="AI Advisory" data-hi="AI सलाह" data-ne="AI सल्लाह">AI Advisory</span>
+            </button>
+            <button class="nav-tab" data-tab="alerts">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span data-en="Alerts" data-hi="अलर्ट" data-ne="चेतावनी">Alerts</span>
+            </button>
+            <button class="nav-tab" data-tab="profile">
+                <i class="fas fa-user"></i>
+                <span data-en="Profile" data-hi="प्रोफाइल" data-ne="प्रोफाइल">Profile</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Home Page -->
+        <div class="page active" id="homePage">
+            <!-- Sensor Data Tabs -->
+            <section class="sensor-section">
+                <h2 data-en="Sensor Data" data-hi="सेंसर डेटा" data-ne="सेन्सर डाटा">Sensor Data</h2>
+                <div class="sensor-tabs">
+                    <button class="sensor-tab active" data-sensor="temperature">
+                        <i class="fas fa-thermometer-half"></i>
+                        <span data-en="Temperature" data-hi="तापमान" data-ne="तापक्रम">Temperature</span>
+                    </button>
+                    <button class="sensor-tab" data-sensor="humidity">
+                        <i class="fas fa-tint"></i>
+                        <span data-en="Humidity" data-hi="नमी" data-ne="आर्द्रता">Humidity</span>
+                    </button>
+                    <button class="sensor-tab" data-sensor="weather">
+                        <i class="fas fa-cloud-sun"></i>
+                        <span data-en="Weather" data-hi="मौसम" data-ne="मौसम">Weather</span>
+                    </button>
+                    <button class="sensor-tab" data-sensor="rainfall">
+                        <i class="fas fa-cloud-rain"></i>
+                        <span data-en="Rainfall" data-hi="वर्षा" data-ne="वर्षा">Rainfall</span>
+                    </button>
+                    <button class="sensor-tab" data-sensor="soil">
+                        <i class="fas fa-seedling"></i>
+                        <span data-en="Soil Moisture" data-hi="मिट्टी की नमी" data-ne="माटोको आर्द्रता">Soil Moisture</span>
+                    </button>
+                </div>
+                <div class="sensor-data-display" id="sensorDataDisplay">
+                    <!-- Dynamic sensor data will be loaded here -->
+                </div>
+            </section>
+
+            <!-- Water Management -->
+            <section class="water-management">
+                <div class="water-panels">
+                    <!-- Water Tank Panel -->
+                    <div class="water-panel">
+                        <h3 data-en="Water Tank" data-hi="पानी की टंकी" data-ne="पानी ट्यांकी">Water Tank</h3>
+                        <div class="water-level-container">
+                            <div class="water-level" id="waterTankLevel">
+                                <div class="water-fill" id="waterTankFill"></div>
+                                <span class="water-percentage" id="waterTankPercentage">75%</span>
+                            </div>
+                            <div class="water-info">
+                                <p id="waterTankStatus" data-en="Optimal Level" data-hi="उत्तम स्तर" data-ne="उत्तम स्तर">Optimal Level</p>
+                                <p id="waterTankDays" data-en="Days remaining: 8" data-hi="बचे दिन: 8" data-ne="बाँकी दिन: ८">Days remaining: 8</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Water Sources Panel -->
+                    <div class="water-panel">
+                        <h3 data-en="Water Sources" data-hi="पानी के स्रोत" data-ne="पानीका स्रोत">Water Sources</h3>
+                        <div class="water-sources">
+                            <div class="source-item">
+                                <span data-en="Pond" data-hi="तालाब" data-ne="पोखरी">Pond</span>
+                                <div class="source-level">
+                                    <div class="source-fill pond-fill" style="width: 45%"></div>
+                                    <span class="source-percentage">45%</span>
+                                </div>
+                            </div>
+                            <div class="source-item">
+                                <span data-en="Jalkund" data-hi="जलकुंड" data-ne="जलकुण्ड">Jalkund</span>
+                                <div class="source-level">
+                                    <div class="source-fill jalkund-fill" style="width: 82%"></div>
+                                    <span class="source-percentage">82%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Irrigation Control -->
+            <section class="irrigation-control">
+                <h3 data-en="Irrigation Control" data-hi="सिंचाई नियंत्रण" data-ne="सिँचाइ नियन्त्रण">Irrigation Control</h3>
+                <div class="irrigation-panel">
+                    <div class="irrigation-status">
+                        <div class="irrigation-toggle">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="irrigationToggle">
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span id="irrigationStatus" data-en="OFF" data-hi="बंद" data-ne="बन्द">OFF</span>
+                        </div>
+                    </div>
+                    <div class="ai-suggestion">
+                        <h4 data-en="AI Recommendation" data-hi="AI सिफारिश" data-ne="AI सिफारिस">AI Recommendation</h4>
+                        <div class="suggestion-content" id="aiSuggestion">
+                            <p data-en="💡 Irrigation needed for 25 minutes based on soil moisture (32%) and weather forecast." 
+                               data-hi="💡 मिट्टी की नमी (32%) और मौसम पूर्वानुमान के आधार पर 25 मिनट सिंचाई की आवश्यकता।" 
+                               data-ne="💡 माटोको आर्द्रता (32%) र मौसम पूर्वानुमानका आधारमा २५ मिनेट सिँचाइ आवश्यक।">
+                               💡 Irrigation needed for 25 minutes based on soil moisture (32%) and weather forecast.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Crop Alerts Panel -->
+            <section class="crop-alerts">
+                <h3 data-en="Crop Status" data-hi="फसल की स्थिति" data-ne="बालीको अवस्था">Crop Status</h3>
+                <div class="crop-status-grid" id="cropStatusGrid">
+                    <!-- Dynamic crop status cards will be loaded here -->
+                </div>
+            </section>
+
+            <!-- Historical Graph Section -->
+            <section class="historical-section">
+                <h3 data-en="Historical Data" data-hi="ऐतिहासिक डेटा" data-ne="ऐतिहासिक डाटा">Historical Data</h3>
+                <div class="graph-controls">
+                    <select id="graphTimeRange">
+                        <option value="7days" data-en="Last 7 Days" data-hi="पिछले 7 दिन" data-ne="पछिल्लो 7 दिन">Last 7 Days</option>
+                        <option value="weeks" data-en="Last 4 Weeks" data-hi="पिछले 4 सप्ताह" data-ne="पछिल्लो 4 हप्ता">Last 4 Weeks</option>
+                        <option value="months" data-en="Last 6 Months" data-hi="पिछले 6 महीने" data-ne="पछिल्लो 6 महिना">Last 6 Months</option>
+                    </select>
+                </div>
+                <div class="chart-container">
+                    <canvas id="historicalChart"></canvas>
+                </div>
+            </section>
+        </div>
+
+        <!-- AI Advisory Page -->
+        <div class="page" id="advisoryPage">
+            <section class="advisory-section">
+                <h2 data-en="AI Crop Advisory" data-hi="AI फसल सलाह" data-ne="AI बाली सल्लाह">AI Crop Advisory</h2>
+                
+                <!-- Search Bar -->
+                <div class="search-container">
+                    <input type="text" id="cropSearch" placeholder="Search crops by name or soil type...">
+                    <i class="fas fa-search"></i>
+                </div>
+
+                <!-- Crop Grid -->
+                <div class="crop-grid" id="cropGrid">
+                    <!-- Dynamic crop cards will be loaded here -->
+                </div>
+            </section>
+
+            <!-- Crop Detail Modal -->
+            <div class="modal" id="cropModal">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <div id="cropDetails">
+                        <!-- Dynamic crop details will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alerts Page -->
+        <div class="page" id="alertsPage">
+            <section class="alerts-section">
+                <h2 data-en="Real-time Alerts" data-hi="रियल-टाइम अलर्ट" data-ne="रियल-टाइम चेतावनी">Real-time Alerts</h2>
+                <div class="alerts-container" id="alertsContainer">
+                    <!-- Dynamic alerts will be loaded here -->
+                </div>
+            </section>
+        </div>
+
+        <!-- Profile Page -->
+        <div class="page" id="profilePage">
+            <section class="profile-section">
+                <h2 data-en="Farmer Profile" data-hi="किसान प्रोफाइल" data-ne="किसान प्रोफाइल">Farmer Profile</h2>
+                <form class="profile-form" id="profileForm">
+                    <div class="form-group">
+                        <label for="farmerName" data-en="Farmer Name" data-hi="किसान का नाम" data-ne="किसानको नाम">Farmer Name</label>
+                        <input type="text" id="farmerName" name="farmerName" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="phoneNumber" data-en="Phone Number" data-hi="फोन नंबर" data-ne="फोन नम्बर">Phone Number</label>
+                        <input type="tel" id="phoneNumber" name="phoneNumber" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="location" data-en="Location" data-hi="स्थान" data-ne="स्थान">Location</label>
+                        <input type="text" id="location" name="location" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="preferredLanguage" data-en="Preferred Language" data-hi="पसंदीदा भाषा" data-ne="मनपर्ने भाषा">Preferred Language</label>
+                        <select id="preferredLanguage" name="preferredLanguage">
+                            <option value="en">English</option>
+                            <option value="hi">हिंदी</option>
+                            <option value="ne">नेपाली</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="soilType" data-en="Soil Type" data-hi="मिट्टी का प्रकार" data-ne="माटोको प्रकार">Soil Type</label>
+                        <select id="soilType" name="soilType" required>
+                            <option value="">Select soil type</option>
+                            <option value="clay">Clay</option>
+                            <option value="sandy">Sandy</option>
+                            <option value="loam">Loam</option>
+                            <option value="silt">Silt</option>
+                            <option value="peat">Peat</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="fieldSize" data-en="Field Size (acres)" data-hi="खेत का आकार (एकड़)" data-ne="खेतको आकार (बिघा)">Field Size (acres)</label>
+                        <input type="number" id="fieldSize" name="fieldSize" step="0.1" min="0.1" required>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="cropStartDate" data-en="Crop Start Date" data-hi="फसल शुरुआत तारीख" data-ne="बाली सुरुको मिति">Crop Start Date</label>
+                            <input type="date" id="cropStartDate" name="cropStartDate" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="cropEndDate" data-en="Expected Harvest Date" data-hi="अनुमानित कटाई तारीख" data-ne="अनुमानित फसल मिति">Expected Harvest Date</label>
+                            <input type="date" id="cropEndDate" name="cropEndDate" required>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="submit-btn">
+                        <span data-en="Save Profile" data-hi="प्रोफाइल सेव करें" data-ne="प्रोफाइल सेभ गर्नुहोस्">Save Profile</span>
+                    </button>
+                </form>
+            </section>
+        </div>
+    </main>
+
+    <!-- Notification Toast -->
+    <div class="toast" id="toast">
+        <div class="toast-content">
+            <span class="toast-message" id="toastMessage"></span>
+            <button class="toast-close" onclick="hideToast()">&times;</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
